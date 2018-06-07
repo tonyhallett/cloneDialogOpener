@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <title>Example</title>
+</head>
+<body>
+  <script src="../scripts/jquery.js"></script>
+  <script src="../scripts/jquery-ui.js"></script>
+  <script src="../cloneDialogOpener.js"></script>
+  <script>
+    var cloneDialogOpener;
+    var draggable;
+    var dialog;
+    $(function(){
+      cloneDialogOpener=$.tonyhallett.cloneDialogOpener(
+        {
+          cloneSelector:"#toClone",
+          cloneOnCreate:true,
+          draggableOptions:{}
+        }); 
+      draggable=cloneDialogOpener.draggable;
+      dialog=cloneDialogOpener.dialog;
+    });
+    function destroy(){
+      cloneDialogOpener.destroy();
+    }
+    function setOptions(){
+      cloneDialogOpener.option({"alwaysClone":true,"draggableOptions.containment":"body"});
+    }
+    function toggleDialogOpen(){
+      if(dialog.isOpen()){
+        dialog.close();
+      }else{
+        dialog.open();
+      }
+    }
+    function toggleDraggable(){
+      draggable.option("disabled",!draggable.option("disabled"));
+    }
+    function toggleDraggableOptions(){
+      var disabled=draggable.option("disabled");
+      cloneDialogOpener.option("draggableOptions",{disabled:!disabled});
+    }
+    function addDragHandlers(){
+      draggable.option("drag",function(){
+        console.log("dragging");
+      });
+      draggable.option("start",function(){
+        console.log("drag start");
+      })
+      draggable.option("stop",function(){
+        console.log("drag stop");
+      })
+    }
+  </script>
+  <style>
+    #clone2{color:green}
+    .clone3{color:blue}
+    a:link {
+      text-decoration:none;
+      color: #cc6611;
+    }
+    a:visited {
+      text-decoration:none;
+      color: #888888;
+    }
+    a:hover {
+      text-decoration:underline;
+      color: #ff9900;
+    }
+
+  </style>
+  <button onclick='toggleDraggable()'>Toggle draggable</button>
+  <button onclick='toggleDraggableOptions()'>Toggle draggable options</button>
+  <button onclick='addDragHandlers()'>Add drag handlers through options</button>
+  <button onclick='toggleDialogOpen()'>Toggle dialog</button>
+  <button onclick='destroy()'>Destroy</button>
+  <button onclick='setOptions()'>Set options</button>
+  
+  <div id="toClone">
+    <div style='color:red'>Cloned 1</div>
+    <div id='clone2'>Cloned 2</div>
+    <div class='clone3'>Cloned 3</div>
+    <a href="">A link</a>
+  </div>
+
+</body>
+</html>
