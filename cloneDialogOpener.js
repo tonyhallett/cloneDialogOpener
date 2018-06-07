@@ -211,13 +211,16 @@
             dialogOptions.noTitleBar=noTitleBar;
             return dialogOptions;
         },
+        _applyCloning:function(){
+            var elementToClone=$(this.options.cloneSelector);
+            this._clone=elementToClone.clone();
+            this._cloneCss(elementToClone);
+        },
         clone:function(){
             if(this._clone){
                 this._clone.dialogNoTitle("destroy");
             }
-            var elementToClone=$(this.options.cloneSelector);
-            this._clone=elementToClone.clone();
-            this._cloneCss(elementToClone);
+            this._applyCloning();
             
             
             
