@@ -1,0 +1,30 @@
+{
+  "name": "clonedialogopener",
+  "version": "1.0.0",
+  "description": "jquery dialog draggable button opener, dialog positioned to the button.  Has additional cloning functionality",
+  "main": "cloneDialogOpener.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tonyhallett/cloneDialogOpener.git"
+  },
+  "keywords": [
+    "jquery",
+    "dialog"
+  ],
+  "author": "Tony Hallett",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tonyhallett/cloneDialogOpener/issues"
+  },
+  "homepage": "https://github.com/tonyhallett/cloneDialogOpener#readme",
+  "devDependencies": {
+    "uglify-js": "^3.4.0",
+    "gulp": "^4.0.0"
+  }
+}
