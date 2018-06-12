@@ -11,7 +11,7 @@ exports.default=function(done){
             if(minified.error){
                 done(err);
             }else{
-                fs.writeFile(__dirname + path.sep + "cloneDialogOpener.min.js",minified.code,function(err){
+                fs.writeFile(__dirname + path.sep + "dist" + path.sep + "cloneDialogOpener.min.js",minified.code,function(err){
                     done(err);
                 });
             }            
