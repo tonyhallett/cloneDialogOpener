@@ -342,7 +342,6 @@
             alwaysClone:false
         },
         _getDialogElement:function(){
-            console.log("cloning")
             return this._applyCloning();
         },
         //#region cloning
