@@ -2,7 +2,8 @@
   "name": "clonedialogopener",
   "version": "1.0.0",
   "description": "jquery dialog draggable button opener, dialog positioned to the button.  Has additional cloning functionality",
-  "main": "cloneDialogOpener.js",
+  "main": "cloneDialogOpener.min.js",
+  "files":["cloneDialogOpener.min.js"],
   "directories": {
     "example": "example"
   },
