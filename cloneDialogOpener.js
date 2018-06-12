@@ -1,4 +1,3 @@
-//need intellisense for this - typescript ?
 (function ( $ ) {
     //#region copy css
     $.fn.getStyles = function(only, except) {
