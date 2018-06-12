@@ -3,22 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <link rel="stylesheet" href="./jquery-ui.theme.min.css">
   <title>Example</title>
 </head>
 <body>
-  <script src="../scripts/jquery.js"></script>
-  <script src="../scripts/jquery-ui.js"></script>
+  <script src="./scripts/jquery.js"></script>
+  <script src="./scripts/jquery-ui.js"></script>
   <script src="../cloneDialogOpener.js"></script>
   <script>
     var cloneDialogOpener;
-    var draggable;
-    var dialog;
+
     $(function(){
       cloneDialogOpener=$.tonyhallett.cloneDialogOpener(
         {
           cloneSelector:"#toClone",
-          cloneOnCreate:true,
+          cloneCss:function(el,i){
+           return i===1; 
+          },
+          dialogOptions:{hide:500,show:500,resizable:false,autoOpen:true},
+          alwaysClone:true,
           draggableOptions:{}
         }); 
       draggable=cloneDialogOpener.draggable;
@@ -27,33 +30,30 @@
     function destroy(){
       cloneDialogOpener.destroy();
     }
-    function setOptions(){
-      cloneDialogOpener.option({"alwaysClone":true,"draggableOptions.containment":"body"});
+    function setDialogOptions(){
+      cloneDialogOpener.option({dialogOptions:{hide:1500,show:1500,title:"Hello",noCloseButton:true,resizable:false,autoOpen:false}});
+    }
+    function setDraggableOptions(){
+      cloneDialogOpener.option({draggableOptions:{axis:"y"}});
     }
     function toggleDialogOpen(){
-      if(dialog.isOpen()){
-        dialog.close();
+      if(cloneDialogOpener.dialogIsOpen()){
+        cloneDialogOpener.dialogClose();
       }else{
-        dialog.open();
+        cloneDialogOpener.dialogOpen();
       }
     }
     function toggleDraggable(){
-      draggable.option("disabled",!draggable.option("disabled"));
+      if(cloneDialogOpener.draggableIsDisabled()){
+        cloneDialogOpener.draggableEnable();
+      }else{
+        cloneDialogOpener.draggableDisable();
+      }
     }
-    function toggleDraggableOptions(){
-      var disabled=draggable.option("disabled");
-      cloneDialogOpener.option("draggableOptions",{disabled:!disabled});
-    }
-    function addDragHandlers(){
-      draggable.option("drag",function(){
-        console.log("dragging");
-      });
-      draggable.option("start",function(){
-        console.log("drag start");
-      })
-      draggable.option("stop",function(){
-        console.log("drag stop");
-      })
+    function toggleAlwaysClone(){
+      var alwaysClone=cloneDialogOpener.option("alwaysClone");
+      console.log("always clone " + alwaysClone);
+      cloneDialogOpener.option("alwaysClone",!cloneDialogOpener.option("alwaysClone"))
     }
   </script>
   <style>
@@ -74,11 +74,11 @@
 
   </style>
   <button onclick='toggleDraggable()'>Toggle draggable</button>
-  <button onclick='toggleDraggableOptions()'>Toggle draggable options</button>
-  <button onclick='addDragHandlers()'>Add drag handlers through options</button>
   <button onclick='toggleDialogOpen()'>Toggle dialog</button>
   <button onclick='destroy()'>Destroy</button>
-  <button onclick='setOptions()'>Set options</button>
+  <button onclick='setDialogOptions()'>Set dialog options</button>
+  <button onclick='setDraggableOptions()'>Set draggable options</button>
+  <button onclick='toggleAlwaysClone()'>Toggle always clone</button>
   
   <div id="toClone">
     <div style='color:red'>Cloned 1</div>

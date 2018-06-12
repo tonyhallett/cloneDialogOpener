@@ -100,160 +100,112 @@
 		return this;
     };
     //#endregion
-    //#region to delete
-    function getAllProperties(obj,ignorePrivate,ignoreRoot){
-        var allProps = []
-          , curr = obj
-        do{
-            if(ignoreRoot&&curr===Object.prototype){
-                break;
-            }
-            var props = Object.getOwnPropertyNames(curr)
-            props.forEach(function(prop){
-                var ignore=false;
-                if(ignorePrivate){
-                    if(prop.indexOf("_")===0){
-                        ignore=true;
-                    }
-                }
-                if(!ignore){
-                    if (allProps.indexOf(prop) === -1)
-                    allProps.push(prop)
+    $.widget( "tonyhallett.dialogNoTitle", $.ui.dialog, 
+        {
+            _create: function() {
+                this._super();
+                this._changeTitleBar();
+            },
+            _setOptions:function(options){
+                this._super(options);
+                this._changeTitleBar();
+            },
+            _changeTitleBar:function(){
+                //will have to have else statements
+                if(this._getNoTitleBar()){
+                    this.uiDialogTitlebar.css("display","none" );
+                }else{
+                    this.uiDialogTitlebar.removeAttr('style');
                 }
                 
-            })
-        }while(curr = Object.getPrototypeOf(curr))
-        return allProps
-    }
-    function interceptor(toIntercept,intercepts,blacklist){
-        var wrapper={};
-        var props=getAllProperties(toIntercept,true,true);
-        for(var i=0;i<props.length;i++){
-            var prop=props[i];
-            console.log(prop + " " + typeof(toIntercept[prop]));
-        }
-    }
-    //#endregion
-    $.widget( "tonyhallett.dialogNoTitle", $.ui.dialog, {
-        _create: function() {
-            this._super();
-            if(this.options.noTitleBar){
-                this.uiDialogTitlebar.css("display","none" );
-            }else if(this.options.noCloseButton){
-                this.uiDialogTitlebarClose.css("display","none");
+                if(this.options.noCloseButton){
+                    this.uiDialogTitlebarClose.css("display","none");
+                }else{
+                    this.uiDialogTitlebar.removeAttr('style');
+                }
+            },
+            _getNoTitleBar:function(){
+                var noTitleBar=true;
+                if(this.options.noTitleBar!==undefined){
+                    noTitleBar=this.options.noTitleBar;
+                }else if(this.options.title||this.element.attr("title")){
+                    noTitleBar=false;
+                }
+                return noTitleBar;
             }
-            
-        }
-    });
+        }
+    );
     var defaultElementClass='th_default_opener';
-    $.widget("tonyhallett.cloneDialogOpener", {      
+    
+    $.widget("tonyhallett.dialogOpener", { 
+        //#region options     
         options: {
-            cloneOnCreate:false,
-            alwaysClone:false,
-            cloneCss:true,//will be false
-            cloneCssRoot:false,
-
+            sameDialog:false,
             draggableOptions:undefined,
             dialogOptions:{hide:500,show:500,noCloseButton:true,resizable:false,autoOpen:false},
             defaultAppendToSelector:"body"
         },
-        _clone:null,
-        
-        
-        defaultElement:$("<img style='position:fixed;bottom:0px;z-index:100;background-color: #ffffff;border: 1px solid #eeeeee;box-shadow: 1px 1px 5px rgba(0, 0, 0, .1);padding:10px'  class='" + defaultElementClass + "' src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAA0CAYAAADFeBvrAAAB8ElEQVRoQ+2ZUU6DQBCGZ2wj+iD0CPUG9dHIHfQG1hOoJ9EbSG9Qb2BiGx/tEeoJ7OKDYoxjaCUhpHQ7DAuULK8ss/PN/8/ukkVo2YMt4wEL1HRFrUKtVOjz5aAf/Th3gDBAgH6ZkAQwB4KZ041uD0+/5tzYbMv9w7wiQo87GWc8ESycbnTChWIDqYk7BsBzTnLFx9Kj54cXnO/ZQItn7920OglAbL+er46NAqmJR+kJPF+xi7IpQWl8djLSCXXVlsa3QNIKWoWYPWotZy2na5rMe2nBrOWkFdQJJo1vFZJW0Cpk9yGdB0peVnXTSS1tFwVpBa1CdS8K4fRoSLT3oFMi709X6gAjPbQN1E4BxerooHYOKIZSU/ceCK/X2a+hQDTy/HC4LuEdVKg4TFyAhilUBIZGAHiZqNkgIDfg2gzx98o9+wjSNmwMUN7+ktczCUzyXTKu0UDbwqShYsXWFafyjTWbBBdGd4KoFahsmOXeJbwMYB99sr2QrXi2Z3SKZN/XAmRCmQSscqAiMLpTQ56KBPDW8xXrDpdluSphVpAGrySrhiEA5XSigbFLYzVxg/TRJa7fpgVAYjMEmu13vm+4MMucOKtQGkq6mnHm5YxlAa32CTdApKe8nZ4zuYmxbCATSZQZ0wKVWU0TsVqn0B8SptRED0pRGwAAAABJRU5ErkJggg==' width='52' height='52'/>"),
-        _destroy:function(){
-            if(this.dialog){
-                this.dialog.destroy();
-            }
-            if(this.draggable){
-                this.draggable.destroy();
-            }
-            if(this._elementIsDefault()){
-                this.element.detach();
-                window.setTimeout(function(){
-                    this.element.remove();
-                }.bind(this),0);
-            }
-        },
-        _cloneCss:function(elementToClone){
-            if(this.options.cloneCss){
-                var originalElements=elementToClone.find('*').toArray();
-                if(this.options.cloneCssRoot){
-                    originalElements.push(elementToClone);
+        _setOptions:function(options){
+            var draggableOptionSet=false;
+            var dialogOptionSet=false;
+            $.each(options,function(propName,value){
+                if(propName.indexOf("draggableOptions")!==-1){
+                    draggableOptionSet=true;
+                }else if(propName.indexOf("dialogOptions")!==-1){
+                    dialogOptionSet=true;
                 }
-                
-                var clonedElements=this._clone.find('*').toArray();
-                if(this.options.cloneCssRoot){
-                    clonedElements.push(this._clone);
-                }
-                
-                for(var i=0;i<originalElements.length;i++){
-                    $(clonedElements[i]).copyCSS(originalElements[i],null,['width','height']);
-                }
-            }
-        },
-        _getDialogOptions:function(){
-            var dialogOptions=$.extend({},this.options.dialogOptions,
-                {
-                    draggable:false,
-                    position: { my: "left bottom", at: "left top", of: this.element},
-                }
-            );
-            
-            var noTitleBar=true;
-            if(dialogOptions.noTitleBar!==undefined){
-                noTitleBar=dialogOptions.noTitleBar;
-            }else{
-                if(dialogOptions.title||this._clone.attr("title")){
-                    noTitleBar=false;
-                }
-            }
-            dialogOptions.noTitleBar=noTitleBar;
-            return dialogOptions;
-        },
-        _applyCloning:function(){
-            var elementToClone=$(this.options.cloneSelector);
-            this._clone=elementToClone.clone();
-            this._cloneCss(elementToClone);
-        },
-        clone:function(){
-            if(this._clone){
-                this._clone.dialogNoTitle("destroy");
-            }
-            this._applyCloning();
-            
-            
-            
-            this._on(this._clone,{
-                "dialognotitleclose":function(){
-                    this._showing=false;
-                },
-                "dialognotitleopen":function(){
-                    this._showing=true;
+                if(draggableOptionSet&&dialogOptionSet){
+                    return false;
                 }
             });
-            this._clone.dialogNoTitle(this._getDialogOptions());
-            
-            this.dialog=this._clone.dialogNoTitle('instance');
-        },
-        _getClone:function(){
-            var shouldClone=this.options.alwaysClone?true:(this._clone?false:true);
-            if(shouldClone){
-                this.clone();
+            this._super(options);
+            if(draggableOptionSet){
+                this._setUpDraggable();
             }
-            return this._clone;
+            if(dialogOptionSet){
+                if(this._dialog){
+                    this._dialog.option(this._getDialogOptions());
+                    this._alignDialog();
+                }else{
+                    this._createDialog();
+                }
+            }
         },
-        _showDialog:function(){
-            var clone=this._getClone();
-            clone.dialogNoTitle("open");
-        },
-        _hideDialog:function(){
-            this._clone.dialogNoTitle("close");
-        },
-        _showing:false,
-        _allowClick:true,
+        //#endregion
+        //#region default element
+        defaultElement:$("<img style='position:fixed;bottom:0px;z-index:100;background-color: #ffffff;border: 1px solid #eeeeee;box-shadow: 1px 1px 5px rgba(0, 0, 0, .1);padding:10px'  class='" + defaultElementClass + "' src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAA0CAYAAADFeBvrAAAB8ElEQVRoQ+2ZUU6DQBCGZ2wj+iD0CPUG9dHIHfQG1hOoJ9EbSG9Qb2BiGx/tEeoJ7OKDYoxjaCUhpHQ7DAuULK8ss/PN/8/ukkVo2YMt4wEL1HRFrUKtVOjz5aAf/Th3gDBAgH6ZkAQwB4KZ041uD0+/5tzYbMv9w7wiQo87GWc8ESycbnTChWIDqYk7BsBzTnLFx9Kj54cXnO/ZQItn7920OglAbL+er46NAqmJR+kJPF+xi7IpQWl8djLSCXXVlsa3QNIKWoWYPWotZy2na5rMe2nBrOWkFdQJJo1vFZJW0Cpk9yGdB0peVnXTSS1tFwVpBa1CdS8K4fRoSLT3oFMi709X6gAjPbQN1E4BxerooHYOKIZSU/ceCK/X2a+hQDTy/HC4LuEdVKg4TFyAhilUBIZGAHiZqNkgIDfg2gzx98o9+wjSNmwMUN7+ktczCUzyXTKu0UDbwqShYsXWFafyjTWbBBdGd4KoFahsmOXeJbwMYB99sr2QrXi2Z3SKZN/XAmRCmQSscqAiMLpTQ56KBPDW8xXrDpdluSphVpAGrySrhiEA5XSigbFLYzVxg/TRJa7fpgVAYjMEmu13vm+4MMucOKtQGkq6mnHm5YxlAa32CTdApKe8nZ4zuYmxbCATSZQZ0wKVWU0TsVqn0B8SptRED0pRGwAAAABJRU5ErkJggg==' width='52' height='52'/>"),
         _elementIsDefault:function(){
             return this.element.hasClass(defaultElementClass);
+        },
+        _addDefaultToDom:function(){
+            if(this._elementIsDefault()){
+                this.element.appendTo(this.options.defaultAppendToSelector);
+            }
+        },
+        //#endregion
+        
+        
+        //#region dialog
+        //#region dialog methods
+        dialogClose:function(){
+            this._dialog.close();
+        },
+        dialogOpen:function(){
+            this._dialog.open();
+        },
+        dialogIsOpen:function(){
+            return this._dialog.isOpen();
+        },
+        //does this make sense ?
+        dialogMoveToTop:function(){
+            return this._dialog.moveToTop();
+        },
+        //#endregion
+        _setUpDialog:function(){
+            this._setUpClickHideShowDialog();
+            if(this.options.dialogOptions.autoOpen){
+                this._createDialog();
+            }
         },
         _setUpClickHideShowDialog:function(){
             this._on({'click':function(){
@@ -266,12 +218,67 @@
                 }
             }});
         },
-        draggable:undefined,
-        _alignDialog:function(){
-            if(this.dialog && this.dialog.isOpen()){
-                this.dialog.option('position',{ my: "left bottom", at: "left top", of: this.element});
+        _showing:false,
+        _dialog:undefined,
+        _createDialog:function(){
+            if(this._dialog){
+                this._dialog.destroy();
+            }
+            var dialogElement=this._getDialogElement();
+            
+            this._on(dialogElement,{
+                "dialognotitleclose":function(){
+                    this._showing=false;
+                },
+                "dialognotitleopen":function(){
+                    this._showing=true;
+                }
+            });
+            dialogElement.dialogNoTitle(this._getDialogOptions(dialogElement));
+            
+            this._dialog=dialogElement.dialogNoTitle('instance');
+        },
+        _getDialogOptions:function(clone){
+            var dialogOptions=$.extend({},this.options.dialogOptions,
+                {
+                    draggable:false,
+                    position: { my: "left bottom", at: "left top", of: this.element},
+                }
+            );
+            return dialogOptions;
+        },
+        
+        _setDialog:function(){
+            var shouldCreateDialog=this._dialog?!this.options.sameDialog:true;
+            if(shouldCreateDialog){
+                this._createDialog();
             }
         },
+        _showDialog:function(){
+            this._setDialog();
+            this._dialog.open();
+        },
+        _hideDialog:function(){
+            this._dialog.close();
+        },
+        _alignDialog:function(){
+            if(this._dialog && this._dialog.isOpen()){
+                this._dialog.option('position',{ my: "left bottom", at: "left top", of: this.element});
+            }
+        },
+        //#endregion
+        //#region draggable
+        draggableDisable:function(){
+            this._draggable.disable();
+        },
+        draggableEnable:function(){
+            this._draggable.enable();
+        },
+        draggableIsDisabled:function(){
+            return this._draggable.option("disabled");
+        },
+        _allowClick:true,
+        _draggable:undefined,
         _setUpDraggable:function(){
             if(this.options.draggableOptions){
                 var draggableOptions=this.options.draggableOptions;
@@ -282,8 +289,8 @@
                 this.element.draggable(
                     draggableOptions
                 );
-                if(!this.draggable){
-                    this.draggable=this.element.draggable('instance');
+                if(!this._draggable){
+                    this._draggable=this.element.draggable('instance');
                     //binding rather than setting through options otherwise have to wrap
                     this._on(
                         {
@@ -305,31 +312,74 @@
                 
             }
         },
-        _setUpDialog:function(){
-            this._setUpClickHideShowDialog();
-            if(this.options.cloneOnCreate){
-                this.clone();
-            }
-        },
+        //#endregion
         _create: function(){
             this._addDefaultToDom();
             this._setUpDialog();
             this._setUpDraggable();
-            
         },
-        _addDefaultToDom:function(){
+        _destroy:function(){
+            if(this._dialog){
+                this._dialog.destroy();
+            }
+            if(this._draggable){
+                this._draggable.destroy();
+            }
             if(this._elementIsDefault()){
-                this.element.appendTo(this.options.defaultAppendToSelector);
+                this.element.detach();
+                window.setTimeout(function(){
+                    this.element.remove();
+                }.bind(this),0);
             }
         },
-
-        _setOptions:function(options){
-            this._super(options);
-            this._setUpDraggable();
-            //what to di if dialog is showing ?
-
-        }
-        
     });
+    $.widget( "tonyhallett.cloneDialogOpener", $.tonyhallett.dialogOpener,{
+        _create:function(){
+            this.options.sameDialog=!this.options.alwaysClone;
+            this._super();
+        },
+        options:{
+            alwaysClone:false
+        },
+        _getDialogElement:function(){
+            console.log("cloning")
+            return this._applyCloning();
+        },
+        //#region cloning
+        _cloneCss:function(elementToClone,clone){
+            var shouldClone=this.options.cloneCss===true||typeof this.options.cloneCss==='function';
+            if(shouldClone){
+                var originalElements=[elementToClone].concat(elementToClone.find('*').toArray());
+                var clonedElements=[clone].concat(clone.find('*').toArray());
+                
+                for(var i=0;i<originalElements.length;i++){
+                    var originalElement=originalElements[i];
+                    var cloneCssCallback=typeof this.options.cloneCss==='function'?this.options.cloneCss:function(){return true;};
+                    var cloneCssResult=cloneCssCallback(originalElement,i);
+                    if(cloneCssResult!==false){
+                        if(cloneCssResult===true){
+                            $(clonedElements[i]).copyCSS(originalElement);
+                        }else{
+                            $(clonedElements[i]).copyCSS(originalElements[i],cloneCssResult.only,cloneCssResult.except);
+                        }
+                    }
+                }
+            }
+        },
+        _applyCloning:function(){
+            var elementToClone=$(this.options.cloneSelector);
+            var clone=elementToClone.clone();
+            this._cloneCss(elementToClone,clone);
+            return clone;
+        },
+        _setOption:function(key,value){
+            if(key==="alwaysClone"){
+                this._super("sameDialog",!value);
+            }
+            this._super(key,value);
+            
+        }
+        //#endregion
+    } );
 
 }( jQuery ));
